@@ -87,6 +87,154 @@
       //     <a class="btn-item" data-js="page-next" href="">次へ</a>
       //   </div>
       // </div>
+
+
+
+
+      $(function() {
+        // 変数
+        var $searchBtn = $('.search__btn');
+        var $input = $('.search__text__input');
+        var $message = $('.message');
+        var errorMes = '<p class="error-message"></p>'
+        var currentPage;
+        var pageFlg = true;
+        var text = "";
+        var htmlContext = "";
+        // 変数
+
+        // 検索ボタンクリック次の処理
+        $searchBtn.on('click', function() {
+          dataReset();
+          var keyword = $input.val();
+          currentPage = 1;
+          getData(keyword,currentPage);
+        });
+        // 検索ボタンクリック次の処理
+
+        // ajax通信処理
+        function getData(keyword,currentPage) {
+        $.ajax({
+          url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+          type: 'GET',
+          datatype: 'json',
+          data: {
+            applicationId: appId,
+            booksGenreId: '001',
+            keyword: keyword,
+            page: currentPage,
+            hits: 20
+          },
+        })
+        .done(function(data) {
+          if(data.count === 0) {
+            $message.html('検索結果が見つかりませんでした。' + '<br>' + '別のキーワードで検索して下さい。')
+          } else {
+            // listおよびpagerの追加
+            addLists(data);
+            addPager(data,currentPage);
+            // listおよびpagerの追加
+
+            // pager_click時の挙動
+            var $btnItem = $('.btn-item');
+            var pageState;
+            $btnItem.on('click', function(event) {
+              event.preventDefault();
+              var $this = $(this);
+              if (pageFlg) {
+                pageFlg = false;
+                pageChanger(keyword,currentPage,$this);
+                pageFlg = true;
+              }
+            });
+            // pager_click時の挙動
+          }
+        })
+        .fail(function(error) {
+          createMessage(error);
+        });
+        }
+        // ajax通信処理
+
+        function addLists(data) {
+          htmlContext = "";
+          $.each(data.Items, function(index, elem) {
+            text = '<li class="lists__item">' +
+              '<div class="lists__item__inner">' +
+                '<a href="' + elem.Item.itemUrl + '" class="lists__item__link" target="_blank">' +
+                  '<img src="' + elem.Item.largeImageUrl + '" class="lists__item__img" alt="">' +
+                  '<p class="lists__item__detail">作品名：' + elem.Item.title + '</p>' +
+                  '<p class="lists__item__detail">作者　：' + elem.Item.author + '</p>' +
+                  '<p class="lists__item__detail">出版社：' + elem.Item.publisherName + '</p>' +
+                '</a>' +
+              '</div>' +
+            '</li>';
+            htmlContext += text;
+          })
+          $('.lists').html(htmlContext);
+        }
+
+        var counterAll;
+        var pager;
+        pager = '<div class="pager" data-js="pager">' +
+          '<div class="counter">' +
+            '<span class="counter-current"></span>' + '/' + '<span class="counter-all">' + '</span>' +
+          '</div>' +
+          '<div class="btn-wrapper">' +
+            '<a class="btn-item" data-js="page-prev" href>前へ</a>' +
+            '<a class="btn-item" data-js="page-next" href>次へ</a>' +
+          '</div>' +
+        '</div>';
+
+        function addPager(data,currentPage) {
+          $('.pager').remove();
+          counterAll = data.pageCount;
+          $('.container').append(pager);
+          $('.counter-current').text(currentPage);
+          $('.counter-all').text(counterAll);
+          if(counterAll === 1) {
+            $('.btn-item').eq(0).addClass('disabled');
+            $('.btn-item').eq(1).addClass('disabled');
+          } else {
+            if (currentPage === 1) {
+              $('.btn-item').eq(0).addClass('disabled');
+            } else if (currentPage === counterAll) {
+              $('.btn-item').eq(1).addClass('disabled');
+            } else {
+              $('.btn-item').eq(0).removeClass('disabled');
+            $('.btn-item').eq(1).removeClass('disabled');
+            }
+          }
+        }
+
+        function pageChanger(keyword,currentPage,$this) {
+          pageState = $this.data('js');
+          if(pageState === 'page-prev' && currentPage > 1) {
+            currentPage --;
+          } else if(pageState === 'page-next' && currentPage < counterAll) {
+            currentPage ++;
+          }
+          getData(keyword,currentPage);
+        }
+
+        function dataReset() {
+          $('.message').text("");
+          $('.pager').remove();
+          $('.lists').html('');
+        }
+
+        function createMessage(error) {
+          $message.html(errorMes);
+          if(error.status === 400) {
+            $('.error-message').html("検索文字が入力されていません。");
+          } else if(error.status === 429) {
+            $('.error-message').html("リクエスト過多です。しばらく時間を置いてからお試しください。");
+          } else if (error.status === 0) {
+            $('.error-message').html("通信に失敗しました。インターネットの接続をご確認ください。");
+          }
+        }
+      });
+
     </script>
   </body>
 </html>
