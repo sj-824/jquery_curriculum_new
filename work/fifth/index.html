@@ -98,26 +98,46 @@
       // .change() セレクトボックスの値の変更をキャッチする関数
       // $().each() DOM要素を1つずつループ処理をする（ループ内で$(this)を使うと要素がひとつずつ取得できる）
       $(function() {
-        $('.select').change(
-          function() {
-            var language = $(this).val();
-            show(language);
-          });
+        $('.select').change(function() {
+          var language = $(this).val();
+          show(language);
+        });
         
         function show(language) {
-          $('.list').children().each(
-            function() {
-              var categoryType = $(this).data('category-type');
-              if (language === 'all') {
-                $(this).show();
-              } else if (language === categoryType) {
-                $(this).show();
-              } else {
-                $(this).hide();
-              }
-            });
+          $('.list').children().each(function() {
+            var categoryType = $(this).data('category-type');
+            if (language === 'all') {
+              $(this).show();
+            } else if (language === categoryType) {
+              $(this).show();
+            } else {
+              $(this).hide();
+            }
+          });
         }
       });
+
+    // $(function() {
+    //   $('.select').change(function() {
+    //     var language = $(this).val();
+    //     if(language === 'all') {
+    //       $('.list li').show();
+    //     } else {
+    //       show(language);
+    //     }
+    //   });
+
+    //   function show(language) {
+    //     $('.list').children().each(function() {
+    //       var categoryType = $(this).data('category-type');
+    //       if(categoryType === language) {
+    //         $(this).show();
+    //       } else {
+    //         $(this).hide();
+    //       }
+    //     })
+    //   }
+    // });
     </script>
   </body>
 </html>
