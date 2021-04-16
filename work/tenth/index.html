@@ -95,20 +95,31 @@
         // 変数
         var $message = $('.message');
         var errorMes = '<p class="error-message"></p>'
+        var keyword;
+        var currentPage;
+        var counterAll;
+        var pageState;
+        var pagerFlg;
         // 変数
 
         // 検索ボタンクリック次の処理
         $('.search__btn').on('click', function() {
           dataReset();
-          var keyword = $('.search__text__input').val();
-          var currentPage = 1;
-          var pagerFlg = true;
-          getData(keyword, currentPage, pagerFlg);
+          keyword = $('.search__text__input').val();
+          currentPage = 1;
+          pagerFlg = true;
+          getData();
+        });
+
+        $('.container').off().on('click', '.btn-item', function(event) {
+          event.preventDefault();
+          var pageState = $(event.currentTarget).data('js');
+          pageChanger(pageState);
         });
         // 検索ボタンクリック次の処理
 
         // ajax通信処理
-        function getData(keyword, currentPage, pagerFlg) {
+        function getData() {
           $.ajax({
             url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
             type: 'GET',
@@ -122,26 +133,17 @@
             },
           })
           .done(function(data) {
-            var counterAll = data.pageCount;
             if(data.count === 0) {
               $message.html(`検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。`);
             } else {
-              // listおよびpagerの追加
+              counterAll = data.pageCount;
               addLists(data);
               if(pagerFlg) {
-                addPager(currentPage, counterAll);
+                addPager();
                 pagerFlg = false;
               } else {
                 ;
               }
-              // pager_click時の挙動
-              $('.btn-item').off().on('click', function(event) {
-                event.preventDefault();
-                var pageState = $(this).data('js');
-                pageChanger(keyword, currentPage, counterAll, pageState);
-              });
-              // pager_click時の挙動
-              // listおよびpagerの追加
             }
           })
           .fail(function(error) {
@@ -152,7 +154,7 @@
 
         // fn-dataReset
         function dataReset() {
-          $('.message').text("");
+          $message.text("");
           $('.lists').html('');
           $('.pager').remove();
         }
@@ -180,7 +182,7 @@
         // fn-addLists
 
         // fn-addPager
-        function addPager(currentPage, counterAll) {
+        function addPager() {
           var pager =
             `<div class="pager" data-js="pager">
               <div class="counter">
@@ -192,50 +194,50 @@
               </div>
             </div>`;
           $('.container').append(pager);
-          pagerState(currentPage, counterAll);
-        }
-        // fn-addPager
-        // fn-pagerState
-        function pagerState(currentPage, counterAll) {
           if(counterAll === 1) {
             $('.btn-item').addClass('disabled');
           } else {
-            $('.btn-item').addClass('disabled');
-            if(currentPage === 1) {
-              $('.btn-item').eq(1).removeClass('disabled');
-            } else if(currentPage === counterAll) {
-              $('.btn-item').eq(0).removeClass('disabled');
-            } else {
-              $('.btn-item').removeClass('disabled');
-            }
+            $('.btn-item').eq(0).addClass('disabled');
+          }
+        }
+        // fn-addPager
+        // fn-pagerState
+        function pagerState() {
+          $('.btn-item').addClass('disabled');
+          if(currentPage === 1) {
+            $('.btn-item').eq(1).removeClass('disabled');
+          } else if (currentPage === counterAll) {
+            $('.btn-item').eq(0).removeClass('disabled');
+          } else {
+            $('.btn-item').removeClass('disabled');
           }
           $('.counter-current').text(currentPage);
         }
         // fn-pagerState
 
         // fn-pageChanger
-        function pageChanger(keyword, currentPage, counterAll, pageState) {
+        function pageChanger(pageState) {
           if(pageState === 'page-prev') {
             if(currentPage > 1) {
               currentPage --;
-              reAccess(keyword, currentPage, counterAll)
+              reAccess();
             } else {
               ;
             }
           } else if(pageState === 'page-next') {
             if(currentPage < counterAll) {
               currentPage ++;
-              reAccess(keyword, currentPage, counterAll)
+              reAccess();
             }
           } else {
             ;
           }
         }
         // fn-pageChanger
-        function reAccess(keyword, currentPage, counterAll) {
+        function reAccess() {
           $('html,body').animate({scrollTop: 0}, 0);
-          getData(keyword,currentPage);
-          pagerState(currentPage, counterAll)
+          getData();
+          pagerState();
         }
         // fn-createMessage
         function createMessage(error) {
