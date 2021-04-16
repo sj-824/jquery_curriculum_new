@@ -92,17 +92,12 @@
 
 
       $(function() {
-        // 変数
-        var $message = $('.message');
-        var errorMes = '<p class="error-message"></p>'
         var keyword;
         var currentPage;
         var counterAll;
         var pageState;
         var pagerFlg;
-        // 変数
 
-        // 検索ボタンクリック次の処理
         $('.search__btn').on('click', function() {
           dataReset();
           keyword = $('.search__text__input').val();
@@ -116,9 +111,7 @@
           var pageState = $(event.currentTarget).data('js');
           pageChanger(pageState);
         });
-        // 検索ボタンクリック次の処理
 
-        // ajax通信処理
         function getData() {
           $.ajax({
             url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
@@ -134,7 +127,7 @@
           })
           .done(function(data) {
             if(data.count === 0) {
-              $message.html(`検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。`);
+              $('.message').html(`<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>`);
             } else {
               counterAll = data.pageCount;
               addLists(data);
@@ -150,17 +143,13 @@
             createMessage(error);
           });
         }
-        // ajax通信処理
 
-        // fn-dataReset
         function dataReset() {
-          $message.text("");
+          $('.message').text("");
           $('.lists').html('');
           $('.pager').remove();
         }
-        // fn-dataReset
 
-        // fn-addLists
         function addLists(data) {
           var htmlContext = "";
           $.each(data.Items, function(index, elem) {
@@ -179,9 +168,7 @@
           });
           $('.lists').html(htmlContext);
         }
-        // fn-addLists
 
-        // fn-addPager
         function addPager() {
           var pager =
             `<div class="pager" data-js="pager">
@@ -200,8 +187,7 @@
             $('.btn-item').eq(0).addClass('disabled');
           }
         }
-        // fn-addPager
-        // fn-pagerState
+
         function pagerState() {
           $('.btn-item').addClass('disabled');
           if(currentPage === 1) {
@@ -213,9 +199,7 @@
           }
           $('.counter-current').text(currentPage);
         }
-        // fn-pagerState
 
-        // fn-pageChanger
         function pageChanger(pageState) {
           if(pageState === 'page-prev') {
             if(currentPage > 1) {
@@ -233,25 +217,24 @@
             ;
           }
         }
-        // fn-pageChanger
+
         function reAccess() {
           $('html,body').animate({scrollTop: 0}, 0);
           getData();
           pagerState();
         }
-        // fn-createMessage
-        function createMessage(error) {
-          $message.html(errorMes);
-          if(error.status === 400) {
-            $('.error-message').html("検索文字が入力されていません。");
-          } else if(error.status === 429) {
-            $('.error-message').html("リクエスト過多です。しばらく時間を置いてからお試しください。");
-          } else if (error.status === 0) {
-            $('.error-message').html("通信に失敗しました。インターネットの接続をご確認ください。");
-          }
-        }
-        // // fn-createMessage
 
+        function createMessage(error) {
+          var errorMessage;
+          if(error.status === 400) {
+            errorMessage = "検索文字が入力されていません。";
+          } else if(error.status === 429) {
+            errorMessage = "リクエスト過多です。しばらく時間を置いてからお試しください。";
+          } else if (error.status === 0) {
+            errorMessage = "通信に失敗しました。インターネットの接続をご確認ください。";
+          }
+          $('.message').html(`<p class="error-message">${errorMessage}</p>`)
+        }
       });
 
     </script>
