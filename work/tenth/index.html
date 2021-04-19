@@ -106,7 +106,7 @@
           getData();
         });
 
-        $('.container').off().on('click', '.btn-item', function(event) {
+        $(document).on('click', '.btn-item', function(event) {
           event.preventDefault();
           var pageState = $(event.currentTarget).data('js');
           pageChanger(pageState);
@@ -127,7 +127,7 @@
           })
           .done(function(data) {
             if(data.count === 0) {
-              $('.message').html(`<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>`);
+              $('.message').html('<p class="error-message">検索結果が見つかりませんでした。<br>別のキーワードで検索して下さい。</p>');
             } else {
               counterAll = data.pageCount;
               addLists(data);
@@ -154,16 +154,16 @@
           var htmlContext = "";
           $.each(data.Items, function(index, elem) {
             var text =
-              `<li class="lists__item">
-                <div class="lists__item__inner">
-                  <a href="${elem.Item.itemUrl}" class="lists__item__link" target="_blank">
-                    <img src="${elem.Item.largeImageUrl}" class="lists__item__img" alt="">
-                    <p class="lists__item__detail">作品名：${elem.Item.title}</p>
-                    <p class="lists__item__detail">作者　：${elem.Item.author}</p>
-                    <p class="lists__item__detail">出版社：${elem.Item.publisherName}</p>
-                  </a>
-                </div>
-              </li>`;
+              '<li class="lists__item">' +
+                '<div class="lists__item__inner">' +
+                  '<a href="${elem.Item.itemUrl}" class="lists__item__link" target="_blank">' +
+                    '<img src="' + elem.Item.largeImageUrl + '" class="lists__item__img" alt="">' +
+                    '<p class="lists__item__detail">作品名：' + elem.Item.title + '</p>' +
+                    '<p class="lists__item__detail">作者　：' + elem.Item.author + '</p>'
+                    '<p class="lists__item__detail">出版社：' + elem.Item.publisherName + '</p>' +
+                  '</a>' +
+                '</div>' +
+              '</li>';
             htmlContext += text;
           });
           $('.lists').html(htmlContext);
@@ -171,29 +171,29 @@
 
         function addPager() {
           var pager =
-            `<div class="pager" data-js="pager">
-              <div class="counter">
-                <span class="counter-current">${currentPage}</span>/<span class="counter-all">${counterAll}</span>
-              </div>
-              <div class="btn-wrapper">
-                <a class="btn-item" data-js="page-prev" href="">前へ</a>
-                <a class="btn-item" data-js="page-next" href="">次へ</a>
-              </div>
-            </div>`;
+            '<div class="pager" data-js="pager">' +
+              '<div class="counter">' +
+                '<span class="counter-current">' + currentPage + '</span>/<span class="counter-all">' + counterAll + '</span>' +
+              '</div>' +
+              '<div class="btn-wrapper">' +
+                '<a class="btn-item" data-js="page-prev" href="">前へ</a>' +
+                '<a class="btn-item" data-js="page-next" href="">次へ</a>' +
+              '</div>' +
+            '</div>';
           $('.container').append(pager);
           if(counterAll === 1) {
             $('.btn-item').addClass('disabled');
           } else {
-            $('.btn-item').eq(0).addClass('disabled');
+            $('.btn-item[data-js="page-prev"]').addClass('disabled');
           }
         }
 
         function pagerState() {
           $('.btn-item').addClass('disabled');
           if(currentPage === 1) {
-            $('.btn-item').eq(1).removeClass('disabled');
+            $('.btn-item[data-js="page-next"]').removeClass('disabled');
           } else if (currentPage === counterAll) {
-            $('.btn-item').eq(0).removeClass('disabled');
+            $('.btn-item[data-js="page-prev"]').removeClass('disabled');
           } else {
             $('.btn-item').removeClass('disabled');
           }
@@ -226,14 +226,18 @@
 
         function createMessage(error) {
           var errorMessage;
-          if(error.status === 400) {
-            errorMessage = "検索文字が入力されていません。";
-          } else if(error.status === 429) {
-            errorMessage = "リクエスト過多です。しばらく時間を置いてからお試しください。";
-          } else if (error.status === 0) {
-            errorMessage = "通信に失敗しました。インターネットの接続をご確認ください。";
+          switch(error.status) {
+            case 0:
+              errorMessage = "通信に失敗しました。インターネットの接続をご確認ください。";
+              break;
+            case 400:
+              errorMessage = "検索文字が入力されていません。";
+              break;
+            case 429:
+              errorMessage = "リクエスト過多です。しばらく時間を置いてからお試しください。";
+              break;
           }
-          $('.message').html(`<p class="error-message">${errorMessage}</p>`)
+          $('.message').html('<p class="error-message">' + errorMessage + '</p>');
         }
       });
 
